@@ -3,6 +3,7 @@
 
 This project using dapper for CRUD.
 These are api specs:
+
 |Description|Verb|URL|
 |----|----|----|
 |Get all event|GET|GET https://localhost:44312/event/|

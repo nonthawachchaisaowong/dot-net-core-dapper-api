@@ -26,6 +26,7 @@ namespace EventTracker.Data
             {
                 using (_sqlConnection)
                 {
+                    _sqlConnection.Open();
                     _sqlConnection.Execute("DELETE FROM Event WHERE Id = @Id", new { Id = id });
                 }
             }
@@ -42,6 +43,7 @@ namespace EventTracker.Data
             {
                 using (_sqlConnection)
                 {
+                    _sqlConnection.Open();
                     return _sqlConnection.Query<Event>("SELECT * FROM Event");
                 }
             }
@@ -56,6 +58,7 @@ namespace EventTracker.Data
             {
                 using (_sqlConnection)
                 {
+                    _sqlConnection.Open();
                     return _sqlConnection.QueryFirst<EventDTO>("SELECT * FROM Event WHERE Id = @Id", new { Id = id });
                 }
             }
@@ -72,7 +75,8 @@ namespace EventTracker.Data
             {
                 using (_sqlConnection)
                 {
-                    _ = _sqlConnection.Execute("INSERT INTO Event (EventLocationId, EventName, EventDate) " +
+                    _sqlConnection.Open();
+                    _sqlConnection.Execute("INSERT INTO Event (EventLocationId, EventName, EventDate) " +
                         "VALUES(@EventLocationId, @EventName, GETUTCDATE())",
                         new { EventLocationId = new Random().Next(1, 10), EventName = eventDTO.EventName });
                 }
@@ -90,6 +94,7 @@ namespace EventTracker.Data
             {
                 using (_sqlConnection)
                 {
+                    _sqlConnection.Open();
                     _sqlConnection.Execute("UPDATE Event SET EventName = @EventName WHERE Id = @Id", new { EventName = eventDTO.EventName, eventDTO.Id });
                 }
             }

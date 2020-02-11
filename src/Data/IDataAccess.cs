@@ -6,10 +6,10 @@ namespace EventTracker.Data
 {
     public interface IDataAccess
     {
-        public IEnumerable<Event> GetAllEvents();
-        public EventDTO GetEventDTOBy(int id);
-        public void InsertEvent(EventDTO eventDTO);
-        public void UpdateEvent(EventDTO eventDTO);
-        public void DeleletEvent(int id);
+        public IEnumerable<Event> GetAll();
+        public Event Get(int id);
+        public void Insert(Event e);
+        public void Update(Event e);
+        public void Delete(int id);
     }
 }

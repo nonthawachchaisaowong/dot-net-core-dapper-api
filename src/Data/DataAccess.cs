@@ -1,112 +1,118 @@
-﻿using Dapper;
-using EventTracker.Dtos;
+﻿using Dapper.Contrib.Extensions;
 using EventTracker.Models;
 using Microsoft.Extensions.Configuration;
 
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
 
 namespace EventTracker.Data
 {
     public class DataAccess : IDataAccess, IDisposable
     {
-        private readonly SqlConnection _sqlConnection;
-        private readonly IConfiguration _config;
+        private readonly string _connectionString;
+        private IDbConnection _sqlConnection;      
 
         public DataAccess(IConfiguration config)
         {
-            _config = config;
-            _sqlConnection = new SqlConnection(_config.GetConnectionString("Default"));
+            _connectionString = config.GetConnectionString("Default");            
         }
 
-        public void DeleletEvent(int id)
-        {
-            try
-            {
-                using (_sqlConnection)
-                {
-                    _sqlConnection.Open();
-                    _sqlConnection.Execute("DELETE FROM Event WHERE Id = @Id", new { Id = id });
-                }
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
-
-
-        public IEnumerable<Event> GetAllEvents()
-        {
-            try
-            {
-                using (_sqlConnection)
-                {
-                    _sqlConnection.Open();
-                    return _sqlConnection.Query<Event>("SELECT * FROM Event");
-                }
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
-        public EventDTO GetEventDTOBy(int id)
-        {
-            try
-            {
-                using (_sqlConnection)
-                {
-                    _sqlConnection.Open();
-                    return _sqlConnection.QueryFirst<EventDTO>("SELECT * FROM Event WHERE Id = @Id", new { Id = id });
-                }
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-
-        }
-
-        public void InsertEvent(EventDTO eventDTO)
-        {
-            try
-            {
-                using (_sqlConnection)
-                {
-                    _sqlConnection.Open();
-                    _sqlConnection.Execute("INSERT INTO Event (EventLocationId, EventName, EventDate) " +
-                        "VALUES(@EventLocationId, @EventName, GETUTCDATE())",
-                        new { EventLocationId = new Random().Next(1, 10), EventName = eventDTO.EventName });
-                }
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-
-        }
-
-        public void UpdateEvent(EventDTO eventDTO)
-        {
-            try
-            {
-                using (_sqlConnection)
-                {
-                    _sqlConnection.Open();
-                    _sqlConnection.Execute("UPDATE Event SET EventName = @EventName WHERE Id = @Id", new { EventName = eventDTO.EventName, eventDTO.Id });
-                }
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
+        private IDbConnection GetConnection()
+        { 
+            return new SqlConnection(_connectionString);
         }
 
         public void Dispose()
         {
             _sqlConnection.Close();
         }
+
+        public IEnumerable<Event> GetAll()
+        {
+            try
+            {
+                using (_sqlConnection = GetConnection())
+                {
+                    _sqlConnection.Open();
+                    var events = _sqlConnection.GetAll<Event>();
+                    return events;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public Event Get(int id)
+        {
+            try
+            {
+                using (var _sqlConnection = GetConnection())
+                {
+                    _sqlConnection.Open();
+                    var e = _sqlConnection.Get<Event>(id);
+                    return e;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public void Insert(Event e)
+        {
+            // Assign some value
+            e.EventDate = DateTime.Now;
+            e.EventLocationId = new Random().Next(1, 10);
+
+            try
+            {
+                using (_sqlConnection = new SqlConnection(_connectionString))
+                {
+                    _sqlConnection.Open();
+                    _sqlConnection.Insert(e);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public void Update(Event e)
+        {
+            try
+            {
+                using (_sqlConnection = GetConnection())
+                {
+                    _sqlConnection.Open();
+                    _sqlConnection.Update(e);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public void Delete(int id)
+        {
+            try
+            {
+                using (_sqlConnection = GetConnection())
+                {
+                    _sqlConnection.Open();
+                    _sqlConnection.Delete(new Event { Id = id });
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }       
     }
 }
